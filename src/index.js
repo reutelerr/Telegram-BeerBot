@@ -36,7 +36,7 @@ bot.on('inline_query', (ctx) => {
         id: movie._id,
         type: 'article',
         title: movie.title,
-        description: movie.description,
+        //description: movie.description,
         reply_markup: buildLikeKeyboard(movie._id),
         input_message_content: {
           message_text: stripMargin`
