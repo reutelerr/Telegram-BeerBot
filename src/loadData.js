@@ -80,9 +80,6 @@ documentDAO.init().then(() => {
           documentDAO.getAllMovies().then((movies) => {
 
             // Retrieve all genres and actors from all movies, split them and assign a numeric id
-            //console.log('Calculating genres and actors');
-            //const genres = [...new Set(movies.flatMap((it) => it.genre.split(',').map(it => it.trim())))].map((it, i) => [i, it]);
-            //const actors = [...new Set(movies.flatMap((it) => it.actors.split(',').map(it => it.trim())))].map((it, i) => [i, it]);
             console.log('Calculating brewery and type');
             const genres = [...new Set(movies.flatMap((it) => it.brewery.split(',').map(it => it.trim())))].map((it, i) => [i, it]);
             const actors = [...new Set(movies.flatMap((it) => it.type.split(',').map(it => it.trim())))].map((it, i) => [i, it]);
