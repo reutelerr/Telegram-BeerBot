@@ -136,18 +136,6 @@ documentDAO.init().then(() => {
                     });
                   });
                 });
-                //=== NEW
-                Promise.all(likePromise).then(() => {
-                  console.log('Done, closing sockets');
-                  Promise.all([
-                    documentDAO.close(),
-                    graphDAO.close()
-                  ]).then(() => {
-                    console.log('Done with importation');
-                  });
-                });
-                //=== OLD
-                /*
                 Promise.all(likePromise).then(() => {
 
                   // Add some actors liked by users
@@ -192,7 +180,7 @@ documentDAO.init().then(() => {
                       });
                     });
                   });
-                });*/
+                });
               });
             });
           });
