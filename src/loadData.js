@@ -81,19 +81,23 @@ documentDAO.init().then(() => {
 
             // Retrieve all genres and actors from all movies, split them and assign a numeric id
             console.log('Calculating genres and actors');
-            const genres = [...new Set(movies.flatMap((it) => it.genre.split(',').map(it => it.trim())))].map((it, i) => [i, it]);
-            const actors = [...new Set(movies.flatMap((it) => it.actors.split(',').map(it => it.trim())))].map((it, i) => [i, it]);
+            //const genres = [...new Set(movies.flatMap((it) => it.genre.split(',').map(it => it.trim())))].map((it, i) => [i, it]);
+            //const actors = [...new Set(movies.flatMap((it) => it.actors.split(',').map(it => it.trim())))].map((it, i) => [i, it]);
             
             console.log('Handling movie insertion in Neo4j');
             const moviesBar = new cliProgress.SingleBar({}, cliProgress.Presets.shades_classic);
             moviesBar.start(movies.length, 0);
 
             Promise.all(movies.map((movie) => new Promise((resolve1) => {
-              const movieGenres = movie.genre.split(',').map(i => i.trim());
-              const movieActors = movie.actors.split(',').map(i => i.trim());
+              //const movieGenres = movie.genre.split(',').map(i => i.trim());
+              //const movieActors = movie.actors.split(',').map(i => i.trim());
 
               graphDAO.upsertMovie(movie._id, movie.title).then(() => {
-
+                //=== NEW
+                moviesBar.increment();
+                resolve1();
+                //=== OLD
+                /*
                 // Update actor <-> movie links
                 Promise.all(movieActors.map((name) => {
                   const id = actors.find((it) => it[1] === name)[0];
@@ -108,7 +112,7 @@ documentDAO.init().then(() => {
                     moviesBar.increment();
                     resolve1();
                   });
-                });
+                });*/
               });
             }))).then(() => {
               moviesBar.stop();
@@ -134,6 +138,18 @@ documentDAO.init().then(() => {
                     });
                   });
                 });
+                //=== NEW
+                Promise.all(likePromise).then(() => {
+                  console.log('Done, closing sockets');
+                  Promise.all([
+                    documentDAO.close(),
+                    graphDAO.close()
+                  ]).then(() => {
+                    console.log('Done with importation');
+                  });
+                });
+                //=== OLD
+                /*
                 Promise.all(likePromise).then(() => {
 
                   // Add some actors liked by users
@@ -178,7 +194,7 @@ documentDAO.init().then(() => {
                       });
                     });
                   });
-                });
+                });*/
               });
             });
           });
