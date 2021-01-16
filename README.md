@@ -14,3 +14,7 @@ Base commands :
  /beers to display beers
   then possibility to click on beer and rate
  /recommend to get a list of top 3 recommended beers according to user's rating (smthing like filter by best type rating then by best brewery rating)
+ 
+## Data Schema (Neo4J)
+
+![Schema](Data_Graph.PNG?raw=true "Title")
