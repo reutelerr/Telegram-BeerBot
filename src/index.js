@@ -64,24 +64,28 @@ bot.on('chosen_inline_result', (ctx) => {
   }
 });
 
+function handleCallback_beerVote(ctx){
+  const [rank, movieId] = ctx.callbackQuery.data.split('__');
+  const liked = {
+    rank: parseInt(rank, 10),
+    at: new Date()
+  };
+
+  graphDAO.upsertMovieLiked({
+    first_name: 'unknown',
+    last_name: 'unknown',
+    language_code: 'fr',
+    is_bot: false,
+    username: 'unknown',
+    ...ctx.from,
+  }, movieId, liked).then(() => {
+    ctx.editMessageReplyMarkup(buildLikeKeyboard(movieId, liked));
+  }); 
+}
+
 bot.on('callback_query', (ctx) => {
   if (ctx.callbackQuery && ctx.from) {
-    const [rank, movieId] = ctx.callbackQuery.data.split('__');
-    const liked = {
-      rank: parseInt(rank, 10),
-      at: new Date()
-    };
-
-    graphDAO.upsertMovieLiked({
-      first_name: 'unknown',
-      last_name: 'unknown',
-      language_code: 'fr',
-      is_bot: false,
-      username: 'unknown',
-      ...ctx.from,
-    }, movieId, liked).then(() => {
-      ctx.editMessageReplyMarkup(buildLikeKeyboard(movieId, liked));
-    }); 
+    handleCallback_beerVote(ctx);
   }
 });
 
@@ -134,9 +138,32 @@ bot.command('list_breweries', (ctx) => {
         const name = record.get('g').properties.name;
         return `${name}`;
       }).join("\n\t");
-      ctx.reply(`Breweries:\n\t${actorsList}`);
+      //ctx.reply(`Breweries:\n\t${actorsList}`);
+      const testResult = `Breweries:\n\t${actorsList}`;
+      const opts = keyboardFromBreweries(records);
+      
+      ctx.reply(text=testResult, reply_markup=opts);
   });
 });
+
+
+function keyboardFromBreweries(listBreweries) {
+  const breweryButtons = listBreweries.map((record) => {
+    const brewery = record.get('g').properties;
+    return {
+      "text": brewery.name,
+      "callback_data": brewery.id
+    };
+  });
+
+  return {
+    "reply_markup": {
+      "inline_keyboard": [
+        breweryButtons
+      ]
+    }
+  };
+}
 
 bot.command('list_types', (ctx) => {
   graphDAO.listTypes().then((records) => {
