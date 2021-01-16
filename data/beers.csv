@@ -1,4 +1,4 @@
 id.int32(),name.string(),brewery.string(),type.string(),origin.string()
-1, Tempête, Gab's, Blonde, Suisse
-2, Houleuse, Gab's, Blonde, Suisse
-3, La blonde, Jorat, Blonde, Suisse
+1,Tempête,Gab's,Blonde,Suisse
+2,Houleuse,Gab's,Blonde,Suisse
+3,La blonde,Jorat,Blonde,Suisse
