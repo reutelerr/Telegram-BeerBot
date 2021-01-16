@@ -130,7 +130,6 @@ documentDAO.init().then(() => {
 
 bot.command('list_breweries', (ctx) => {
   graphDAO.listBreweries().then((records) => {
-      const test = records;
       const actorsList = records.map((record) => {
         const name = record.get('g').properties.name;
         return `${name}`;
@@ -141,11 +140,32 @@ bot.command('list_breweries', (ctx) => {
 
 bot.command('list_types', (ctx) => {
   graphDAO.listTypes().then((records) => {
-      const test = records;
       const actorsList = records.map((record) => {
         const name = record.get('a').properties.name;
         return `${name}`;
       }).join("\n\t");
-      ctx.reply(`Types:\n\t${actorsList}`);
+
+      const testResult = `Types:\n\t${actorsList}`;
+      const opts = keyboardFromTypes(records);
+      
+      ctx.reply(text=testResult, reply_markup=opts);
   });
 });
+
+function keyboardFromTypes(listTypes) {
+  const typeButtons = listTypes.map((record) => {
+    const type = record.get('a').properties;
+    return {
+      "text": type.name,
+      "callback_data": type.id
+    };
+  });
+
+  return {
+    "reply_markup": {
+      "inline_keyboard": [
+        typeButtons
+      ]
+    }
+  };
+}
