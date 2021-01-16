@@ -31,7 +31,8 @@ const shuffle = (array) => {
 };
 
 const parseMovies = () => new Promise((resolve) => {
-  fs.readFile(join(__dirname, '../data/movies.csv')).then((baseMovies) => {
+  //fs.readFile(join(__dirname, '../data/movies.csv')).then((baseMovies) => {
+  fs.readFile(join(__dirname, '../data/beers.csv')).then((baseMovies) => {
     parse(baseMovies, (err, data) => {
       resolve(data);
     });
@@ -66,14 +67,10 @@ documentDAO.init().then(() => {
 
         Promise.all(parsedMovies.map((it) => {
           const [
-            rank, title, genre, description, director,
-            actors, year, runtime, rating, votes,
-            revenue, metascore
+            id, title, brewery, type, origin
           ] = it;
           return documentDAO.insertMovie({
-            rank, title, genre, description, director,
-            actors, year, runtime, rating, votes,
-            revenue, metascore
+            id, title, brewery, type, origin
           }).then(() => parseMoviesBar.increment());
         })).then(() => {
           parseMoviesBar.stop();
