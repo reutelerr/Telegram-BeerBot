@@ -280,6 +280,22 @@ class GraphDAO {
       });
     });
   }
+
+  listBreweries() {
+    return this.run(`
+      match (g:Genre)
+      return g
+    `, {
+    }).then((result) => result.records);
+  }
+
+  listTypes() {
+    return this.run(`
+      match (a:Actor)
+      return a
+    `, {
+    }).then((result) => result.records);
+  }
 }
 
 module.exports = GraphDAO;

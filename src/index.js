@@ -126,3 +126,26 @@ bot.command('recommendactor', (ctx) => {
 documentDAO.init().then(() => {
   bot.startPolling();
 });
+
+
+bot.command('list_breweries', (ctx) => {
+  graphDAO.listBreweries().then((records) => {
+      const test = records;
+      const actorsList = records.map((record) => {
+        const name = record.get('g').properties.name;
+        return `${name}`;
+      }).join("\n\t");
+      ctx.reply(`Breweries:\n\t${actorsList}`);
+  });
+});
+
+bot.command('list_types', (ctx) => {
+  graphDAO.listTypes().then((records) => {
+      const test = records;
+      const actorsList = records.map((record) => {
+        const name = record.get('a').properties.name;
+        return `${name}`;
+      }).join("\n\t");
+      ctx.reply(`Types:\n\t${actorsList}`);
+  });
+});
