@@ -40,11 +40,10 @@ bot.on('inline_query', (ctx) => {
         reply_markup: buildLikeKeyboard(movie._id),
         input_message_content: {
           message_text: stripMargin`
-            |Title: ${movie.title}
-            |Description: ${movie.description},
-            |Year: ${movie.year}
-            |Actors: ${movie.actors}
-            |Genres: ${movie.genre}
+            |Name:      ${movie.title}
+            |Brewery:   ${movie.brewery}
+            |Type:      ${movie.type}
+            |Origin:    ${movie.origin}
           `
         },
       }));
