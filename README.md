@@ -17,3 +17,9 @@ On beer click -> msg from bot with beer info and rate buttons
 
 ### More commands :
 - /listBreweries to list breweries
+- /listTypes to list types
+
+ 
+## Data Schema (Neo4J)
+
+![Schema](Data_Graph.PNG?raw=true "Title")
