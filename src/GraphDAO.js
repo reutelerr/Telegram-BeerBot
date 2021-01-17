@@ -248,7 +248,7 @@ class GraphDAO {
 
 
 
-  recommendActors(userId) {
+  recommendBeers(userId) {//Recommendation based on other user's preferences
     /*
     return this.run(`
       match (u:User{id: $userId})-[l:LIKED]->(m:Movie)<-[:PLAYED_IN]-(a:Actor)-[:PLAYED_IN]->(m2:Movie)<-[l2:LIKED]-(u)
@@ -261,7 +261,8 @@ class GraphDAO {
     }).then((result) => result.records);
     */
     return this.run(`
-      match (u:User{id: $userId})-[l:LIKED]->(m:Movie)<-[:PLAYED_IN]-(a:Actor)
+      match (u:User{id: $userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
+      where l.rank >= 4 and l2.rank >= 4 and l3.rank >= 4
       return a, count(*)
       order by count(*) desc
       limit 5
