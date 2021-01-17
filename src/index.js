@@ -22,6 +22,7 @@ function buildLikeKeyboard(movieId, currentLike) {
       [1,2,3,4,5].map((v) => ({
         text: currentLike && currentLike.rank === v ? "★".repeat(v) : "☆".repeat(v),
         callback_data: v + '__' + movieId, // payload that will be retrieved when button is pressed
+        command: 'beerVote',
       })),
     ],
   }
@@ -85,7 +86,16 @@ function handleCallback_beerVote(ctx){
 
 bot.on('callback_query', (ctx) => {
   if (ctx.callbackQuery && ctx.from) {
-    handleCallback_beerVote(ctx);
+    const command = ctx.callbackQuery.command
+    switch(command){
+      case 'beerVote':
+        handleCallback_beerVote(ctx);
+        break;
+      default:
+        console.log(`error for command ${command}`);
+        break;
+    }
+    
   }
 });
 
