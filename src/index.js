@@ -22,6 +22,7 @@ function buildLikeKeyboard(movieId, currentLike) {
       [1,2,3,4,5].map((v) => ({
         text: currentLike && currentLike.rank === v ? "★".repeat(v) : "☆".repeat(v),
         callback_data: v + '__' + movieId, // payload that will be retrieved when button is pressed
+        command: 'beerVote',
       })),
     ],
   }
@@ -36,15 +37,14 @@ bot.on('inline_query', (ctx) => {
         id: movie._id,
         type: 'article',
         title: movie.title,
-        description: movie.description,
+        //description: movie.description,
         reply_markup: buildLikeKeyboard(movie._id),
         input_message_content: {
           message_text: stripMargin`
-            |Title: ${movie.title}
-            |Description: ${movie.description},
-            |Year: ${movie.year}
-            |Actors: ${movie.actors}
-            |Genres: ${movie.genre}
+            |Name:      ${movie.title}
+            |Brewery:   ${movie.brewery}
+            |Type:      ${movie.type}
+            |Origin:    ${movie.origin}
           `
         },
       }));
@@ -65,24 +65,37 @@ bot.on('chosen_inline_result', (ctx) => {
   }
 });
 
+function handleCallback_beerVote(ctx){
+  const [rank, movieId] = ctx.callbackQuery.data.split('__');
+  const liked = {
+    rank: parseInt(rank, 10),
+    at: new Date()
+  };
+
+  graphDAO.upsertMovieLiked({
+    first_name: 'unknown',
+    last_name: 'unknown',
+    language_code: 'fr',
+    is_bot: false,
+    username: 'unknown',
+    ...ctx.from,
+  }, movieId, liked).then(() => {
+    ctx.editMessageReplyMarkup(buildLikeKeyboard(movieId, liked));
+  }); 
+}
+
 bot.on('callback_query', (ctx) => {
   if (ctx.callbackQuery && ctx.from) {
-    const [rank, movieId] = ctx.callbackQuery.data.split('__');
-    const liked = {
-      rank: parseInt(rank, 10),
-      at: new Date()
-    };
-
-    graphDAO.upsertMovieLiked({
-      first_name: 'unknown',
-      last_name: 'unknown',
-      language_code: 'fr',
-      is_bot: false,
-      username: 'unknown',
-      ...ctx.from,
-    }, movieId, liked).then(() => {
-      ctx.editMessageReplyMarkup(buildLikeKeyboard(movieId, liked));
-    }); 
+    const command = ctx.callbackQuery.command
+    switch(command){
+      case 'beerVote':
+        handleCallback_beerVote(ctx);
+        break;
+      default:
+        console.log(`error for command ${command}`);
+        break;
+    }
+    
   }
 });
 
@@ -127,3 +140,69 @@ bot.command('recommendactor', (ctx) => {
 documentDAO.init().then(() => {
   bot.startPolling();
 });
+
+
+bot.command('list_breweries', (ctx) => {
+  graphDAO.listBreweries().then((records) => {
+      const actorsList = records.map((record) => {
+        const name = record.get('g').properties.name;
+        return `${name}`;
+      }).join("\n\t");
+      //ctx.reply(`Breweries:\n\t${actorsList}`);
+      const testResult = `Breweries:\n\t${actorsList}`;
+      const opts = keyboardFromBreweries(records);
+      
+      ctx.reply(text=testResult, reply_markup=opts);
+  });
+});
+
+
+function keyboardFromBreweries(listBreweries) {
+  const breweryButtons = listBreweries.map((record) => {
+    const brewery = record.get('g').properties;
+    return {
+      "text": brewery.name,
+      "callback_data": brewery.id
+    };
+  });
+
+  return {
+    "reply_markup": {
+      "inline_keyboard": [
+        breweryButtons
+      ]
+    }
+  };
+}
+
+bot.command('list_types', (ctx) => {
+  graphDAO.listTypes().then((records) => {
+      const actorsList = records.map((record) => {
+        const name = record.get('a').properties.name;
+        return `${name}`;
+      }).join("\n\t");
+
+      const testResult = `Types:\n\t${actorsList}`;
+      const opts = keyboardFromTypes(records);
+      
+      ctx.reply(text=testResult, reply_markup=opts);
+  });
+});
+
+function keyboardFromTypes(listTypes) {
+  const typeButtons = listTypes.map((record) => {
+    const type = record.get('a').properties;
+    return {
+      "text": type.name,
+      "callback_data": type.id
+    };
+  });
+
+  return {
+    "reply_markup": {
+      "inline_keyboard": [
+        typeButtons
+      ]
+    }
+  };
+}
