@@ -17,4 +17,9 @@ Base commands :
 
  @MrBeerBot to search in beer list
 
- On beer click -> msg from bot with beer info and rate buttons
+ On beer click -> msg from bot with beer info and rate buttons 
+ 
+## Data Schema (Neo4J)
+
+![Schema](Data_Graph.PNG?raw=true "Title")
+

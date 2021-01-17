@@ -2,15 +2,19 @@
 const neo4j = require('neo4j-driver');
 
 class GraphDAO {
-  
+
   constructor() {
     this.driver = neo4j.driver(`bolt://${process.env.GRAPHDB_HOST}`);
   }
 
   prepare() {
     return new Promise((resolve) => {
-      this.run("CREATE CONSTRAINT ON (n:Movie) ASSERT n.id IS UNIQUE", {}).then(() => {
-        this.run("CREATE CONSTRAINT ON (u:User) ASSERT u.id IS UNIQUE", {}).then(() => resolve());
+      this.run("CREATE CONSTRAINT ON (b:Beer) ASSERT b.id IS UNIQUE", {}).then(() => {
+        this.run("CREATE CONSTRAINT ON (u:User) ASSERT u.id IS UNIQUE", {}).then(() => {
+          this.run("CREATE CONSTRAINT ON (b:Brewery) ASSERT b.id IS UNIQUE",  {}).then(() => {
+            this.run("CREATE CONSTRAINT ON (s:Style) ASSERT s.id IS UNIQUE", {}).then(() => resolve())
+          });
+        });
       });
     });
   }
@@ -19,9 +23,9 @@ class GraphDAO {
     return this.driver.close();
   }
 
-  upsertMovieLiked(user, movieId, liked) {
+  upsertBeerLiked(user, beerId, liked) {
     return this.run(`
-      MATCH (m:Movie {id: $movieId})
+      MATCH (b:Beer {id: $beerId})
         MERGE (u:User {id: $userId})
           ON CREATE SET u.isBot = $isBot,
                         u.firstName = $firstName,
@@ -33,13 +37,13 @@ class GraphDAO {
                         u.lastName = $lastName,
                         u.username = $username,
                         u.languageCode = $languageCode
-        MERGE (u)-[l:LIKED]->(m)
+        MERGE (u)-[l:LIKED]->(b)
           ON CREATE SET l.rank = $likedRank,
                         l.at = $likedAt
           ON MATCH SET  l.rank = $likedRank,
                         l.at = $likedAt
     `, {
-      movieId,
+      beerId,
       isBot: user.is_bot,
       firstName: user.first_name,
       lastName: user.last_name,
@@ -51,8 +55,8 @@ class GraphDAO {
     });
   }
 
-  getMovieLiked(userId, movieId) {
-    return this.run('MATCH (:User{id: $userId})-[l:LIKED]-(:Movie{id: $movieId}) RETURN l', {
+  getBeerLiked(userId, movieId) {
+    return this.run('MATCH (:User{id: $userId})-[l:LIKED]-(:Beer{id: $beerId}) RETURN l', {
       userId,
       movieId,
     }).then((res) => {
@@ -67,36 +71,36 @@ class GraphDAO {
     });
   }
 
-  upsertMovie(movieId, movieTitle) {
-    return this.run('MERGE (m:Movie{id: $movieId}) ON CREATE SET m.title = $movieTitle RETURN m', {
-      movieId,
-      movieTitle,
+  upsertBeer(beerId, beerName) {
+    return this.run('MERGE (b:Beer{id: $beerId}) ON CREATE SET b.name = $beerName RETURN b', {
+      beerId,
+      beerName,
     })
   }
 
-  upsertActor(movieId, actor) {
+  upsertBrewery(beerId, brewery) {
     return this.run(`
-      MATCH (m:Movie{ id: $movieId })
-      MERGE (a:Actor{id: $actorId})
-        ON CREATE SET a.name = $actorName
-      MERGE (a)-[r:PLAYED_IN]->(m)
+      MATCH (b:Beer{ id: $beerId })
+      MERGE (br:Brewery{id: $breweryId})
+        ON CREATE SET br.name = $breweryName
+      MERGE (b)-[r:BREWED_BY]->(br)
     `, {
-      movieId,
-      actorId: actor.id,
-      actorName: actor.name,
+      beerId,
+      breweryId: brewery.id,
+      breweryName: brewery.name,
     });
   }
 
-  upsertGenre(movieId, genre) {
+  upsertStyle(beerId, style) {
     return this.run(`
-      MATCH (m:Movie{ id: $movieId })
-      MERGE (g:Genre{id: $genreId})
-        ON CREATE SET g.name = $genreName
-      MERGE (m)-[r:BELONGS_TO]->(g)
+      MATCH (b:Beer{ id: $beerId })
+      MERGE (s:Style{id: $styleId})
+        ON CREATE SET s.name = $styleName
+      MERGE (b)-[r:IS_TYPE]->(s)
     `, {
-      movieId,
-      genreId: genre.id,
-      genreName: genre.name,
+      beerId,
+      styleId: style.id,
+      styleName: style.name,
     });
   }
 
@@ -123,7 +127,7 @@ class GraphDAO {
     });
   }
 
-  upsertAdded(userId, movieId, added) {
+  /*upsertAdded(userId, movieId, added) {
     return this.run(`
       MATCH (m:Movie{ id: $movieId })
       MATCH (u:User{ id: $userId })
@@ -135,60 +139,60 @@ class GraphDAO {
       movieId,
       at: this.toDate(added.at),
     });
-  }
+  }*/
 
-  upsertMovieUserLiked(userId, movieId, liked) {
+  upsertBeerUserLiked(userId, beerId, liked) {
     return this.run(`
-      MATCH (m:Movie{ id: $movieId })
+      MATCH (b:Beer{ id: $beerId })
       MATCH (u:User{ id: $userId })
-      MERGE (u)-[r:LIKED]->(m)
+      MERGE (u)-[r:LIKED]->(b)
         ON CREATE SET r.at = $at,
                       r.rank = $rank
         ON MATCH SET  r.at = $at,
                       r.rank = $rank
     `, {
       userId: this.toInt(userId),
-      movieId,
+      beerId,
       at: this.toDate(liked.at),
       rank: this.toInt(liked.rank)
     });
   }
 
-   upsertGenreLiked(userId, genreId, liked) {
+   upsertStyleLiked(userId, styleId, liked) {
     return this.run(`
-      MATCH (g:Genre{ id: $genreId })
+      MATCH (s:Style{ id: $styleId })
       MATCH (u:User{ id: $userId })
-      MERGE (u)-[r:LIKED]->(g)
+      MERGE (u)-[r:LIKED]->(s)
       ON CREATE SET r.at = $at,
                     r.rank = $rank
       ON MATCH SET  r.at = $at,
                     r.rank = $rank
     `, {
       userId: this.toInt(userId),
-      genreId: this.toInt(genreId),
+      styleId: this.toInt(styleId),
       at: this.toDate(liked.at),
       rank: liked.rank
     });
   }
 
-  upsertActorLiked(userId, actorId, liked) {
+  upsertBreweryLiked(userId, breweryId, liked) {
     return this.run(`
-      MATCH (a:Actor{ id: $actorId })
+      MATCH (br:Brewery{ id: $breweryId })
       MATCH (u:User{ id: $userId })
-      MERGE (u)-[r:LIKED]->(g)
+      MERGE (u)-[r:LIKED]->(br)
       ON CREATE SET r.at = $at,
                     r.rank = $rank
       ON MATCH SET  r.at = $at,
                     r.rank = $rank
     `, {
       userId: this.toInt(userId),
-      actorId: this.toInt(actorId),
+      breweryId: this.toInt(breweryId),
       at: this.toDate(liked.at),
       rank: this.toInt(liked.rank)
     });
   }
 
-  upsertRequested(userId, movieId, requested) {
+  /*upsertRequested(userId, movieId, requested) {
     return this.run(`
       MATCH (m:Movie{ id: $movieId })
       MATCH (u:User{ id: $userId })
@@ -200,11 +204,11 @@ class GraphDAO {
       movieId,
       at: this.toDate(requested.at),
     });
-  }
+  }*/
 
-  upsertCommentAboutMovie(userId, movieId, comment) {
+  upsertCommentAboutBeer(userId, beerId, comment) {
     return this.run(`
-      MATCH (m:Movie{ id: $movieId })
+      MATCH (b:Beer{ id: $beerId })
       MATCH (u:User{ id: $userId })
       MERGE (c:Comment{ id: $commentId })
         ON CREATE SET c.text = $commentText,
@@ -212,17 +216,17 @@ class GraphDAO {
         ON MATCH SET  c.text = $commentText,
                       c.at = $commentAt
       MERGE (u)-[r:WROTE]->(c)
-      MERGE (c)-[r:ABOUT]->(m)
+      MERGE (c)-[r:ABOUT]->(b)
     `, {
       userId: this.toInt(userId),
-      movieId,
+      beerId,
       commentId: this.toInt(comment.id),
       commentAt: this.toDate(comment.at),
       commentText: comment.text
     });
   }
 
-  upsertCommentAbountComment(userId, commentId, comment) {
+  upsertCommentAboutComment(userId, commentId, comment) {
     return this.run(`
       MATCH (cc:Comment{ id: $commentId })
       MATCH (u:User{ id: $userId })
@@ -242,7 +246,9 @@ class GraphDAO {
     });
   }
 
-  recommendActors(userId) {
+
+
+  recommendBeers(userId) {//Recommendation based on other user's preferences
     /*
     return this.run(`
       match (u:User{id: $userId})-[l:LIKED]->(m:Movie)<-[:PLAYED_IN]-(a:Actor)-[:PLAYED_IN]->(m2:Movie)<-[l2:LIKED]-(u)
@@ -255,7 +261,8 @@ class GraphDAO {
     }).then((result) => result.records);
     */
     return this.run(`
-      match (u:User{id: $userId})-[l:LIKED]->(m:Movie)<-[:PLAYED_IN]-(a:Actor)
+      match (u:User{id: $userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
+      where l.rank >= 4 and l2.rank >= 4 and l3.rank >= 4
       return a, count(*)
       order by count(*) desc
       limit 5
