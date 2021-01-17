@@ -1,4 +1,3 @@
-id.int32(),title.string(),brewery.string(),type.string(),origin.string()
 1,Tempête,Gab's,Blonde,Suisse
 2,Houleuse,Gab's,Blanche,Suisse
 3,La blonde,Jorat,Blonde,Suisse

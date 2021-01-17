@@ -24,23 +24,27 @@ class DocumentDAO {
     return this.client.close();
   }
 
-  insertMovie(movie) {
-    return this.collection.insertOne(movie);
+  deleteAll() {
+    this.collection.deleteMany();
   }
 
-  getMovies(search) {
-    return this.collection.find({ 'title': new RegExp(search) }).limit(10).toArray();
+  insertBeer(beer) {
+    return this.collection.insertOne(beer);
   }
 
-  getMovieById(id) {
+  getBeers(search) {
+    return this.collection.find({ 'name': new RegExp(search) }).limit(10).toArray();
+  }
+
+  getBeerById(id) {
     return this.collection.findOne({ _id: id });
   }
 
-  getRandomMovies(n) {
+  getRandomBeers(n) {
     return this.collection.find().limit(n).toArray();
   }
 
-  getAllMovies() {
+  getAllBeers() {
     return this.collection.find().toArray().then((result) => {
       return result.map((it) => ({
         ...it,

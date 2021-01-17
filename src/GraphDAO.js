@@ -11,8 +11,8 @@ class GraphDAO {
     return new Promise((resolve) => {
       this.run("CREATE CONSTRAINT ON (b:Beer) ASSERT b.id IS UNIQUE", {}).then(() => {
         this.run("CREATE CONSTRAINT ON (u:User) ASSERT u.id IS UNIQUE", {}).then(() => {
-          this.run("CREATE CONSTRAINT ON (b:Brewery) ASSERT b.id IS UNIQUE",  {}).then(() => {
-            this.run("CREATE CONSTRAINT ON (s:Style) ASSERT s.id IS UNIQUE", {}).then(() => resolve())
+          this.run("CREATE CONSTRAINT ON (br:Brewery) ASSERT br.id IS UNIQUE",  {}).then(() => {
+            this.run("CREATE CONSTRAINT ON (t:Type) ASSERT t.id IS UNIQUE", {}).then(() => resolve())
           });
         });
       });
@@ -22,6 +22,11 @@ class GraphDAO {
   close() {
     return this.driver.close();
   }
+
+  deleteAll() {
+    this.run(`MATCH (n) DETACH DELETE n`).then()
+  }
+
 
   upsertBeerLiked(user, beerId, liked) {
     return this.run(`
@@ -55,10 +60,10 @@ class GraphDAO {
     });
   }
 
-  getBeerLiked(userId, movieId) {
+  getBeerLiked(userId, beerId) {
     return this.run('MATCH (:User{id: $userId})-[l:LIKED]-(:Beer{id: $beerId}) RETURN l', {
       userId,
-      movieId,
+      beerId,
     }).then((res) => {
       if (res.records.length === 0) return null;
       else {
@@ -75,7 +80,7 @@ class GraphDAO {
     return this.run('MERGE (b:Beer{id: $beerId}) ON CREATE SET b.name = $beerName RETURN b', {
       beerId,
       beerName,
-    })
+    });
   }
 
   upsertBrewery(beerId, brewery) {
@@ -91,16 +96,16 @@ class GraphDAO {
     });
   }
 
-  upsertStyle(beerId, style) {
+  upsertType(beerId, type) {
     return this.run(`
       MATCH (b:Beer{ id: $beerId })
-      MERGE (s:Style{id: $styleId})
-        ON CREATE SET s.name = $styleName
-      MERGE (b)-[r:IS_TYPE]->(s)
+      MERGE (t:Type{id: $typeId})
+        ON CREATE SET t.name = $typeName
+      MERGE (b)-[r:IS_TYPE]->(t)
     `, {
       beerId,
-      styleId: style.id,
-      styleName: style.name,
+      typeId: type.id,
+      typeName: type.name,
     });
   }
 
@@ -158,9 +163,9 @@ class GraphDAO {
     });
   }
 
-   upsertStyleLiked(userId, styleId, liked) {
+   upsertTypeLiked(userId, typeId, liked) {
     return this.run(`
-      MATCH (s:Style{ id: $styleId })
+      MATCH (s:Type{ id: $typeId })
       MATCH (u:User{ id: $userId })
       MERGE (u)-[r:LIKED]->(s)
       ON CREATE SET r.at = $at,
@@ -169,7 +174,7 @@ class GraphDAO {
                     r.rank = $rank
     `, {
       userId: this.toInt(userId),
-      styleId: this.toInt(styleId),
+      typeId: this.toInt(typeId),
       at: this.toDate(liked.at),
       rank: liked.rank
     });
@@ -290,16 +295,16 @@ class GraphDAO {
 
   listBreweries() {
     return this.run(`
-      match (g:Genre)
-      return g
+      match (br:Brewery)
+      return br
     `, {
     }).then((result) => result.records);
   }
 
   listTypes() {
     return this.run(`
-      match (a:Actor)
-      return a
+      match (t:Type)
+      return t
     `, {
     }).then((result) => result.records);
   }
