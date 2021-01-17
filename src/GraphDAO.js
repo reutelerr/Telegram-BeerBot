@@ -268,7 +268,7 @@ class GraphDAO {
     return this.run(`
       match (u:User{id: $userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
       where l.rank >= 4 and l2.rank >= 4 and l3.rank >= 4
-      return a, count(*)
+      return b, count(*)
       order by count(*) desc
       limit 5
     `, {

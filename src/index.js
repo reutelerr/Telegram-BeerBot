@@ -64,7 +64,7 @@ bot.on('chosen_inline_result', (ctx) => {
   }
 });
 
-function handleCallback_beerVote(rank, beerId, ttUser){
+function handleCallback_beerVote(rank, beerId, ttUser, ctx){
   const liked = {
     rank: parseInt(rank, 10),
     at: new Date()
@@ -89,7 +89,7 @@ bot.on('callback_query', (ctx) => {
     const [command, rank, beerId] = ctx.callbackQuery.data.split('__');
     switch(command){
       case 'beerVote':
-        handleCallback_beerVote(rank, beerId, ctx.from);
+        handleCallback_beerVote(rank, beerId, ctx.from, ctx);
         break;
       default:
         console.log(`error for command ${command}`);
