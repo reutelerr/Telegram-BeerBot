@@ -84,12 +84,32 @@ function handleCallback_beerVote(rank, beerId, ttUser, ctx){
   });
 }
 
+function handleCallback_selectBrewery(breweryId, ttUser, ctx){
+  graphDAO.recommendBeers(ctx.from.id).then((beerScores) => {
+    if (beerScores.length === 0) ctx.reply("You haven't liked enough beers to have recommendations");
+    else {
+      const beerList = beerScores.map((record) => {
+        const name = record.beer.properties.name;
+        const rank = record.rank;
+        return `${name} (${rank})`;
+      }).join("\n\t");
+      ctx.reply(`Based your like and dislike we recommend the following beer(s):\n\t${beerList}`);
+    }
+  });
+}
+
 bot.on('callback_query', (ctx) => {
   if (ctx.callbackQuery && ctx.from) {
-    const [command, rank, beerId] = ctx.callbackQuery.data.split('__');
+    const command = ctx.callbackQuery.data.split('__')[0];
     switch(command){
       case 'beerVote':
+        const [, rank, beerId] = ctx.callbackQuery.data.split('__');
         handleCallback_beerVote(rank, beerId, ctx.from, ctx);
+        break;
+      case 'brewerySelect':
+        console.log(`not impl ${command}`);
+        const [, breweryId] = ctx.callbackQuery.data.split('__');
+        handleCallback_selectBrewery(breweryId, ctx.from, ctx);
         break;
       default:
         console.log(`error for command ${command}`);
@@ -163,7 +183,7 @@ function keyboardFromBreweries(listBreweries) {
     const brewery = record.get('br').properties;
     return {
       "text": brewery.name,
-      "callback_data": brewery.id
+      "callback_data": 'brewerySelect' + '__' + brewery.id
     };
   });
 

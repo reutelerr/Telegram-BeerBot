@@ -339,6 +339,14 @@ class GraphDAO {
     `, {
     }).then((result) => result.records);
   }
+
+  listBreweryBeers(breweryId) {
+    return this.run(`
+      match (t:Type)
+      return t
+    `, {
+    }).then((result) => result.records);
+  }
 }
 
 module.exports = GraphDAO;
