@@ -277,12 +277,7 @@ bot.command('list_myTopTypes', (ctx) => {
     graphDAO.listUserTopTypes(ctx.from.id).then((records) => {
       if (records.length === 0) ctx.reply("You haven't liked enough beers to have stats");
       else {
-        const beerList = records.map((record) => {
-          const name = record.get('t.name');
-          const nbVotes = record.get('nbLiked');
-          const avgRating = record.get('avgRating').toFixed(1);
-          return `${name} | avg rating: ${avgRating} (based on ${nbVotes} votes)`;
-        }).join("\n\t");
+        const beerList = getRatings(records);
         ctx.reply(`Your top types :\n\t${beerList}`);
       }
     });
@@ -291,12 +286,16 @@ bot.command('list_myTopTypes', (ctx) => {
 
 bot.command('list_globalTopTypes', (ctx) => {
   graphDAO.listGlobalTopTypes().then((records) => {
-    const beerList = records.map((record) => {
-      const name = record.get('t.name');
-      const nbVotes = record.get('nbLiked');
-      const avgRating = record.get('avgRating').toFixed(1);
-      return `${name} | avg rating: ${avgRating} (based on ${nbVotes} votes)`;
-    }).join("\n\t");
+    const beerList = getRatings(records);
     ctx.reply(`Top types :\n\t${beerList}`);
   });
 });
+
+function getRatings(records){
+  return records.map((record) => {
+    const name = record.get('t.name');
+    const nbVotes = record.get('nbLiked');
+    const avgRating = record.get('avgRating').toFixed(1);
+    return `${name} | avg rating: ${avgRating} (based on ${nbVotes} votes)`;
+  }).join("\n\t");
+}
