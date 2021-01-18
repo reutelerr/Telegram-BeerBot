@@ -269,3 +269,34 @@ bot.command('list_globalTopBreweries', (ctx) => {
     ctx.reply(`Top breweries :\n\t${beerList}`);
   });
 });
+
+bot.command('list_myTopTypes', (ctx) => {
+  if (!ctx.from || !ctx.from.id) {
+    ctx.reply('We cannot guess who you are');
+  } else {
+    graphDAO.listUserTopTypes(ctx.from.id).then((records) => {
+      if (records.length === 0) ctx.reply("You haven't liked enough beers to have stats");
+      else {
+        const beerList = records.map((record) => {
+          const name = record.get('t.name');
+          const nbVotes = record.get('nbLiked');
+          const avgRating = record.get('avgRating').toFixed(1);
+          return `${name} | avg rating: ${avgRating} (based on ${nbVotes} votes)`;
+        }).join("\n\t");
+        ctx.reply(`Your top types :\n\t${beerList}`);
+      }
+    });
+  }
+});
+
+bot.command('list_globalTopTypes', (ctx) => {
+  graphDAO.listGlobalTopTypes().then((records) => {
+    const beerList = records.map((record) => {
+      const name = record.get('t.name');
+      const nbVotes = record.get('nbLiked');
+      const avgRating = record.get('avgRating').toFixed(1);
+      return `${name} | avg rating: ${avgRating} (based on ${nbVotes} votes)`;
+    }).join("\n\t");
+    ctx.reply(`Top types :\n\t${beerList}`);
+  });
+});
