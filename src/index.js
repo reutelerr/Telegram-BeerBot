@@ -133,13 +133,21 @@ bot.on('callback_query', (ctx) => {
 
 bot.command('help', (ctx) => {
   ctx.reply(`
-A demo for the project given in the MAC course at the HEIG-VD.
+Project for the MAC course at the HEIG-VD.
 
-A user can display a movie and set a reaction to this movie (like, dislike).
-When asked, the bot will provide a recommendation based on the movies he liked or disliked.
+You can search in our beer database, select a beer and give it a rating.
+When asked, the bot will provide a recommendation based on the beers you rated.
 
-Use inline queries to display a movie, then use the inline keyboard of the resulting message to react.
-Use the command /recommendactor to get a personalized recommendation.
+Use inline queries to display a beer, then use the inline keyboard of the resulting message to react.
+Use the command /recommendBeer to get a personalized recommendation.
+
+/list_breweries to list breweries. You can then click one to see its list of beers
+/list_types to list beer types. You can then click one to see its list of beers
+/list_myTopBreweries to list my favourite breweries with their associated ratings
+/list_globalTopBreweries to list the overall best rated breweries
+/list_myTopTypes to list my favourite beer types with their associated ratings
+/list_globalTopTypes to list the overall best rated beer types
+
   `);
 });
 
@@ -160,7 +168,7 @@ bot.command('recommendBeer', (ctx) => {
           const rank = record.rank.toFixed(2);
           return `${name} (${rank}%)`;
         }).join("\n\t");
-        ctx.reply(`Based your like and dislike we recommend the following beer(s):\n\t${beerList}`);
+        ctx.reply(`Based on  your votes we recommend the following beer(s):\n\t${beerList}`);
       }
     });
   }
