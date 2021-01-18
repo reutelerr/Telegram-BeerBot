@@ -362,7 +362,7 @@ class GraphDAO {
   listUserTopBreweries(userId){
     return this.run(`
     MATCH (u:User {id: $userId})-[l:LIKED]->(b:Beer)<-[BREWED_BY]->(br:Brewery)
-    RETURN size(collect(b)) AS nbLiked, br.name, AVG(l.rank) AS avgRating
+    RETURN size(collect(b)) AS nbLiked, br.name as name, AVG(l.rank) AS avgRating
    ORDER BY avgRating DESC
     `, {
       userId
@@ -373,7 +373,7 @@ class GraphDAO {
   listGlobalTopBreweries(){
     return this.run(`
       MATCH (u:User)-[l:LIKED]->(b:Beer)<-[BREWED_BY]->(br:Brewery)
-      RETURN size(collect(b)) AS nbLiked, br.name, AVG(l.rank) AS avgRating
+      RETURN size(collect(b)) AS nbLiked, br.name as name, AVG(l.rank) AS avgRating
       ORDER BY avgRating DESC
     `, {
     }).then((result) => result.records);
@@ -382,7 +382,7 @@ class GraphDAO {
   listUserTopTypes(userId){
     return this.run(`
       MATCH (u:User {id: $userId})-[l:LIKED]->(b:Beer)<-[r:IS_TYPE]->(t:Type)
-          RETURN size(collect(b)) AS nbLiked, t.name, AVG(l.rank) AS avgRating
+          RETURN size(collect(b)) AS nbLiked, t.name as name, AVG(l.rank) AS avgRating
         ORDER BY avgRating DESC
     `, {
       userId
@@ -392,7 +392,7 @@ class GraphDAO {
   listGlobalTopTypes(){
     return this.run(`
       MATCH (u:User)-[l:LIKED]->(b:Beer)<-[r:IS_TYPE]->(t:Type)
-          RETURN size(collect(b)) AS nbLiked, t.name, AVG(l.rank) AS avgRating
+          RETURN size(collect(b)) AS nbLiked, t.name as name, AVG(l.rank) AS avgRating
         ORDER BY avgRating DESC
     `, {
     }).then((result) => result.records);
