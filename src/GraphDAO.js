@@ -281,9 +281,10 @@ class GraphDAO {
         alreadyLiked.push(record.get('b'))
       });
       return this.run(`
-        match (u:User{id: $userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
+        match (u:User{id:$userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
         where l.rank >= 4 and l2.rank >= 4 and l3.rank >= 4
-        return b2, l, l2, l3
+        return b2, (l.rank + l2.rank + l3.rank) AS rank
+        ORDER BY rank DESC
         limit 5
       `, {
         userId
@@ -291,13 +292,11 @@ class GraphDAO {
         result.records.forEach( record => {
           if(!alreadyLiked.includes(record.get('b2'))) {
             let beer = record.get('b2');
-            let rank1 = record.get('l').properties.rank;
-            let rank2 = record.get('l2').properties.rank;
-            let rank3 = record.get('l3').properties.rank;
+            let rank = record.get('rank');
             if(scoreTable.includes((element) => element.beer === beer)) {
-              scoreTable.find((element) => element.beer === beer).rank += rank1+rank2+rank3;
+              scoreTable.find((element) => element.beer === beer).rank += rank;
             } else {
-              let element = {beer : beer, rank : rank1+rank2+rank3};
+              let element = {beer : beer, rank : rank};
               scoreTable.push(element);
             }
           }
