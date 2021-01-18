@@ -358,6 +358,17 @@ class GraphDAO {
     }).then((result) => result.records);
     
   }
+
+  listUserTopBreweries(userId){
+    return this.run(`
+      MATCH (u:User {id: $userId})-[LIKES]->(b:Beer)<-[BREWED_BY]->(br:Brewery)
+      RETURN size(collect(b)) AS nbLiked, br.name
+      ORDER BY nbLiked DESC
+    `, {
+      userId
+    }).then((result) => result.records);
+    
+  }
 }
 
 module.exports = GraphDAO;
