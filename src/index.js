@@ -238,3 +238,22 @@ function keyboardFromTypes(listTypes) {
     }
   };
 }
+
+bot.command('list_myTopBreweries', (ctx) => {
+  let beerScores;
+  if (!ctx.from || !ctx.from.id) {
+    ctx.reply('We cannot guess who you are');
+  } else {
+    graphDAO.listUserTopBreweries(ctx.from.id).then((records) => {
+      if (records.length === 0) ctx.reply("You haven't liked enough beers to have stats");
+      else {
+        const beerList = records.map((record) => {
+          const name = record.get('br.name');
+          const rank = record.get('nbLiked');
+          return `${name} (${rank})`;
+        }).join("\n\t");
+        ctx.reply(`Your top breweries :\n\t${beerList}`);
+      }
+    });
+  }
+});
