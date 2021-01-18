@@ -94,6 +94,16 @@ function handleCallback_selectBrewery(breweryId, ctx){
   });
 }
 
+function handleCallback_selectType(typeId, ctx){
+  graphDAO.listTypeBeers(typeId).then((beers) => {
+      const beerList = beers.map((beer) => {
+        const name = beer.name;
+        return `${name}`;
+      }).join("\n\t");
+      ctx.reply(`Beers from this type :\n\t${beerList}`);
+  });
+}
+
 bot.on('callback_query', (ctx) => {
   if (ctx.callbackQuery && ctx.from) {
     const command = ctx.callbackQuery.data.split('__')[0];
@@ -106,6 +116,11 @@ bot.on('callback_query', (ctx) => {
         console.log(`TODO FIX ${command}`);
         const [, breweryId] = ctx.callbackQuery.data.split('__');
         handleCallback_selectBrewery(breweryId, ctx);
+        break;
+       case 'typeSelect':
+        console.log(`TODO FIX ${command}`);
+        const [, typeId] = ctx.callbackQuery.data.split('__');
+        handleCallback_selectType(typeId, ctx);
         break;
       default:
         console.log(`error for command ${command}`);
@@ -211,7 +226,7 @@ function keyboardFromTypes(listTypes) {
     const type = record.get('t').properties;
     return {
       "text": type.name,
-      "callback_data": type.id
+      "callback_data": 'typeSelect' + '__' + type.id
     };
   });
 

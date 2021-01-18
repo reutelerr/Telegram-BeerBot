@@ -348,6 +348,16 @@ class GraphDAO {
       breweryId
     }).then((result) => result.records);
   }
+
+  listTypeBeers(typeId){
+    return this.run(`
+      MATCH (b:Beer)-[IS_TYPE]->(t:Type{id: $typeId})
+      RETURN b
+    `, {
+      typeId
+    }).then((result) => result.records);
+    
+  }
 }
 
 module.exports = GraphDAO;
