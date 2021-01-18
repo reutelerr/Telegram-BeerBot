@@ -29,6 +29,10 @@ class GraphDAO {
 
 
   upsertBeerLiked(user, beerId, liked) {
+    if(user.last_name === undefined){
+      user.last_name = "noLastName";
+    }
+
     return this.run(`
       MATCH (b:Beer {id: $beerId})
         MERGE (u:User {id: $userId})
