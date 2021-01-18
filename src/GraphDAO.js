@@ -361,9 +361,9 @@ class GraphDAO {
 
   listUserTopBreweries(userId){
     return this.run(`
-      MATCH (u:User {id: $userId})-[LIKED]->(b:Beer)<-[BREWED_BY]->(br:Brewery)
-      RETURN size(collect(b)) AS nbLiked, br.name
-      ORDER BY nbLiked DESC
+    MATCH (u:User {id: $userId})-[l:LIKED]->(b:Beer)<-[BREWED_BY]->(br:Brewery)
+    RETURN size(collect(b)) AS nbLiked, br.name, AVG(l.rank) AS avgRating
+   ORDER BY avgRating DESC
     `, {
       userId
     }).then((result) => result.records);

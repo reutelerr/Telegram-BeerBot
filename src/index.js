@@ -248,8 +248,9 @@ bot.command('list_myTopBreweries', (ctx) => {
       else {
         const beerList = records.map((record) => {
           const name = record.get('br.name');
-          const rank = record.get('nbLiked');
-          return `${name} (${rank})`;
+          const nbVotes = record.get('nbLiked');
+          const avgRating = record.get('avgRating').toFixed(1);
+          return `${name} | avg rating: ${avgRating} (based on ${nbVotes} votes)`;
         }).join("\n\t");
         ctx.reply(`Your top breweries :\n\t${beerList}`);
       }
