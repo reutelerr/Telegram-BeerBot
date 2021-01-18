@@ -355,7 +355,7 @@ class GraphDAO {
     `, {
       typeId
     }).then((result) => result.records);
-    
+
   }
 
   listUserTopBreweries(userId){
@@ -366,7 +366,7 @@ class GraphDAO {
     `, {
       userId
     }).then((result) => result.records);
-    
+
   }
 
   listGlobalTopBreweries(){
@@ -395,7 +395,7 @@ class GraphDAO {
         ORDER BY avgRating DESC
     `, {
     }).then((result) => result.records);
-    
+
   }
 }
 
