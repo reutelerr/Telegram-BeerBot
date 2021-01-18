@@ -11,7 +11,7 @@ const documentDAO = new DocumentDAO();
 
 function stripMargin(template, ...expressions) {
   const result = template.reduce((accumulator, part, i) => {
-      return accumulator + expressions[i - 1] + part;
+    return accumulator + expressions[i - 1] + part;
   });
   return result.replace(/(\n|\r|\r\n)\s*\|/g, '$1');
 }
@@ -19,7 +19,7 @@ function stripMargin(template, ...expressions) {
 function buildLikeKeyboard(beerId, currentLike) {
   return {
     inline_keyboard: [
-      [1,2,3,4,5].map((v) => ({
+      [1, 2, 3, 4, 5].map((v) => ({
         text: currentLike && currentLike.rank === v ? "★".repeat(v) : "☆".repeat(v),
         callback_data: 'beerVote' + '__' + v + '__' + beerId // payload that will be retrieved when button is pressed
       })),
@@ -64,7 +64,7 @@ bot.on('chosen_inline_result', (ctx) => {
   }
 });
 
-function handleCallback_beerVote(rank, beerId, ttUser, ctx){
+function handleCallback_beerVote(rank, beerId, ttUser, ctx) {
   const liked = {
     rank: parseInt(rank, 10),
     at: new Date()
@@ -84,32 +84,32 @@ function handleCallback_beerVote(rank, beerId, ttUser, ctx){
   });
 }
 
-function handleCallback_selectBrewery(breweryId, ctx){
+function handleCallback_selectBrewery(breweryId, ctx) {
   let breweryIdInt = Number(breweryId);
   graphDAO.listBreweryBeers(breweryIdInt).then((beers) => {
-      const beerList = beers.map((record) => {
-        const name = record.get('b').properties.name;
-        return `${name}`;
-      }).join("\n\t");
-      ctx.reply(`This brewery has the following beers :\n\t${beerList}`);
+    const beerList = beers.map((record) => {
+      const name = record.get('b').properties.name;
+      return `${name}`;
+    }).join("\n\t");
+    ctx.reply(`This brewery has the following beers :\n\t${beerList}`);
   });
 }
 
-function handleCallback_selectType(typeId, ctx){
+function handleCallback_selectType(typeId, ctx) {
   let typeIdInt = Number(typeId);
   graphDAO.listTypeBeers(typeIdInt).then((beers) => {
-      const beerList = beers.map((record) => {
-        const name = record.get('b').properties.name;
-        return `${name}`;
-      }).join("\n\t");
-      ctx.reply(`Beers from this type :\n\t${beerList}`);
+    const beerList = beers.map((record) => {
+      const name = record.get('b').properties.name;
+      return `${name}`;
+    }).join("\n\t");
+    ctx.reply(`Beers from this type :\n\t${beerList}`);
   });
 }
 
 bot.on('callback_query', (ctx) => {
   if (ctx.callbackQuery && ctx.from) {
     const command = ctx.callbackQuery.data.split('__')[0];
-    switch(command){
+    switch (command) {
       case 'beerVote':
         const [, rank, beerId] = ctx.callbackQuery.data.split('__');
         handleCallback_beerVote(rank, beerId, ctx.from, ctx);
@@ -118,7 +118,7 @@ bot.on('callback_query', (ctx) => {
         const [, breweryId] = ctx.callbackQuery.data.split('__');
         handleCallback_selectBrewery(breweryId, ctx);
         break;
-       case 'typeSelect':
+      case 'typeSelect':
         const [, typeId] = ctx.callbackQuery.data.split('__');
         handleCallback_selectType(typeId, ctx);
         break;
@@ -176,15 +176,15 @@ documentDAO.init().then(() => {
 
 bot.command('list_breweries', (ctx) => {
   graphDAO.listBreweries().then((records) => {
-      const breweriesList = records.map((record) => {
-        const name = record.get('br').properties.name;
-        return `${name}`;
-      }).join("\n\t");
-      //ctx.reply(`Breweries:\n\t${breweriesList}`);
-      const testResult = `Breweries:\n\t${breweriesList}`;
-      const opts = keyboardFromBreweries(records);
+    const breweriesList = records.map((record) => {
+      const name = record.get('br').properties.name;
+      return `${name}`;
+    }).join("\n\t");
+    //ctx.reply(`Breweries:\n\t${breweriesList}`);
+    const testResult = `Breweries:\n\t${breweriesList}`;
+    const opts = keyboardFromBreweries(records);
 
-      ctx.reply(text=testResult, reply_markup=opts);
+    ctx.reply(text = testResult, reply_markup = opts);
   });
 });
 
@@ -209,15 +209,15 @@ function keyboardFromBreweries(listBreweries) {
 
 bot.command('list_types', (ctx) => {
   graphDAO.listTypes().then((records) => {
-      const typeList = records.map((record) => {
-        const name = record.get('t').properties.name;
-        return `${name}`;
-      }).join("\n\t");
+    const typeList = records.map((record) => {
+      const name = record.get('t').properties.name;
+      return `${name}`;
+    }).join("\n\t");
 
-      const testResult = `Types:\n\t${typeList}`;
-      const opts = keyboardFromTypes(records);
+    const testResult = `Types:\n\t${typeList}`;
+    const opts = keyboardFromTypes(records);
 
-      ctx.reply(text=testResult, reply_markup=opts);
+    ctx.reply(text = testResult, reply_markup = opts);
   });
 });
 
@@ -281,7 +281,7 @@ bot.command('list_globalTopTypes', (ctx) => {
   });
 });
 
-function getRatings(records){
+function getRatings(records) {
   return records.map((record) => {
     const name = record.get('name');
     const nbVotes = record.get('nbLiked');

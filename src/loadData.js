@@ -20,7 +20,7 @@ const buildUser = (id, username, first_name, last_name, language_code, is_bot) =
 
 const shuffle = (array) => {
 
-  for(let i = array.length - 1; i > 0; i--){
+  for (let i = array.length - 1; i > 0; i--) {
     const j = Math.floor(Math.random() * i);
     const temp = array[i];
     array[i] = array[j];
@@ -129,60 +129,58 @@ documentDAO.init().then(() => {
               });
               Promise.all(addedPromise).then(() => {*/
 
-                // Add some beers liked by users
-                console.log('Add some beers liked by users');
-                const likePromise = [280, 34, 98, 254, 0].flatMap((quantity, index) => {
-                  return shuffle(beers).slice(0, quantity).map((beer) => {
-                    return graphDAO.upsertBeerLiked(users[index], beer.id, {
+              // Add some beers liked by users
+              console.log('Add some beers liked by users');
+              const likePromise = [280, 34, 98, 254, 0].flatMap((quantity, index) => {
+                return shuffle(beers).slice(0, quantity).map((beer) => {
+                  return graphDAO.upsertBeerLiked(users[index], beer.id, {
+                    rank: Math.floor(Math.random() * 5) + 1,
+                    at: new Date(160613000 * 1000 + (Math.floor(Math.random() * 3124) * 1000))
+                  });
+                });
+              });
+              Promise.all(likePromise).then(() => {
+
+                // Add some breweries liked by users
+                console.log('Add some breweries liked by users');
+                const breweriesPromise = [300, 674, 0, 45, 36].flatMap((quantity, index) => {
+                  return shuffle(breweries).slice(0, quantity).map(([breweryId]) => {
+                    return graphDAO.upsertBreweryLiked(users[index].id, breweryId, {
                       rank: Math.floor(Math.random() * 5) + 1,
                       at: new Date(160613000 * 1000 + (Math.floor(Math.random() * 3124) * 1000))
                     });
                   });
                 });
-                Promise.all(likePromise).then(() => {
-
-                  // Add some breweries liked by users
-                  console.log('Add some breweries liked by users');
-                  const breweriesPromise = [300, 674, 0, 45, 36].flatMap((quantity, index) => {
-                    return shuffle(breweries).slice(0, quantity).map(([breweryId]) => {
-                      return graphDAO.upsertBreweryLiked(users[index].id, breweryId, {
+                Promise.all(breweriesPromise).then(() => {
+                  // Add some types liked by users
+                  console.log('Add some types liked by users');
+                  const typePromise = [22, 3, 0, 4, 7].flatMap((quantity, index) => {
+                    return shuffle(types).slice(0, quantity).map((typeId) => {
+                      return graphDAO.upsertTypeLiked(users[index].id, typeId, {
                         rank: Math.floor(Math.random() * 5) + 1,
                         at: new Date(160613000 * 1000 + (Math.floor(Math.random() * 3124) * 1000))
                       });
                     });
                   });
-                  Promise.all(breweriesPromise).then(() => {
-                    // Add some types liked by users
-                    console.log('Add some types liked by users');
-                    const typePromise = [22, 3, 0, 4, 7].flatMap((quantity, index) => {
-                      return shuffle(types).slice(0, quantity).map((typeId) => {
-                        return graphDAO.upsertTypeLiked(users[index].id, typeId, {
-                          rank: Math.floor(Math.random() * 5) + 1,
+                  Promise.all(typePromise).then(() => {
+                    /*
+                    // Add some beers requested
+                    console.log('Add some requested beers');
+                    const requestedPromise = [560, 12, 456, 25, 387].flatMap((quantity, index) => {
+                      return shuffle(beers).slice(0, quantity).map((movie) => {
+                        return graphDAO.upsertRequested(users[index].id, movie._id, {
                           at: new Date(160613000 * 1000 + (Math.floor(Math.random() * 3124) * 1000))
                         });
                       });
                     });
-                    Promise.all(typePromise).then(() => {
-                      /*
-                      // Add some beers requested
-                      console.log('Add some requested beers');
-                      const requestedPromise = [560, 12, 456, 25, 387].flatMap((quantity, index) => {
-                        return shuffle(beers).slice(0, quantity).map((movie) => {
-                          return graphDAO.upsertRequested(users[index].id, movie._id, {
-                            at: new Date(160613000 * 1000 + (Math.floor(Math.random() * 3124) * 1000))
-                          });
-                        });
-                      });
-                      Promise.all(requestedPromise).then(() => {
-                       */
-                        console.log('Done, closing sockets');
-                        Promise.all([
-                          documentDAO.close(),
-                          graphDAO.close()
-                        ]).then(() => {
-                          console.log('Done with importation');
-                        });
-                      });
+                    Promise.all(requestedPromise).then(() => {
+                     */
+                    console.log('Done, closing sockets');
+                    Promise.all([
+                      documentDAO.close(),
+                      graphDAO.close()
+                    ]).then(() => {
+                      console.log('Done with importation');
                     });
                   });
                 });
@@ -191,6 +189,8 @@ documentDAO.init().then(() => {
           });
         });
       });
-    /*});
-  });*/
+    });
+  });
+  /*});
+});*/
 });
