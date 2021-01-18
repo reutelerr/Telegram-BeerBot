@@ -254,6 +254,8 @@ class GraphDAO {
 
 
   recommendBeers(userId) {//Recommendation based on other user's preferences
+    let scoreTable = [];
+    let alreadyLiked = [];
     /*
     return this.run(`
       match (u:User{id: $userId})-[l:LIKED]->(m:Movie)<-[:PLAYED_IN]-(a:Actor)-[:PLAYED_IN]->(m2:Movie)<-[l2:LIKED]-(u)
@@ -266,14 +268,39 @@ class GraphDAO {
     }).then((result) => result.records);
     */
     return this.run(`
-      match (u:User{id: $userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
-      where l.rank >= 4 and l2.rank >= 4 and l3.rank >= 4
-      return b, count(*)
-      order by count(*) desc
-      limit 5
+    match (u:User{id: $userId})-[l:LIKED]->(b:Beer)
+    return b
     `, {
       userId
-    }).then((result) => result.records);
+    }).then((result) => {
+      result.records.forEach(record => {
+        alreadyLiked.push(record.get('b'))
+      });
+      return this.run(`
+        match (u:User{id: $userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
+        where l.rank >= 4 and l2.rank >= 4 and l3.rank >= 4
+        return b2, l, l2, l3
+        limit 5
+      `, {
+        userId
+      }).then((result) => {
+        result.records.forEach( record => {
+          if(!alreadyLiked.includes(record.get('b2'))) {
+            let beer = record.get('b2');
+            let rank1 = record.get('l').properties.rank;
+            let rank2 = record.get('l2').properties.rank;
+            let rank3 = record.get('l3').properties.rank;
+            if(scoreTable.includes((element) => element.beer === beer)) {
+              scoreTable.find((element) => element.beer === beer).rank += rank1+rank2+rank3;
+            } else {
+              let element = {beer : beer, rank : rank1+rank2+rank3};
+              scoreTable.push(element);
+            }
+          }
+        });
+        return scoreTable;
+      });
+    });
   }
 
   toDate(value) {

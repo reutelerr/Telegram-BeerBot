@@ -12,6 +12,7 @@
     "express": "^4.17.1",
     "mongodb": "^3.6.3",
     "neo4j-driver": "^4.2.1",
+    "sort-map": "^1.0.0",
     "telegraf": "^3.38.0"
   },
   "devDependencies": {

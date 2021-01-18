@@ -117,20 +117,20 @@ bot.command('start', (ctx) => {
 });
 
 bot.command('recommendBeer', (ctx) => {
+  let beerScores;
   if (!ctx.from || !ctx.from.id) {
     ctx.reply('We cannot guess who you are');
   } else {
-    graphDAO.recommendBeers(ctx.from.id).then((records) => {
-      if (records.length === 0) ctx.reply("You haven't liked enough beers to have recommendations");
-      else {
-        const beerList = records.map((record) => {
-          const name = record.get('b').properties.name;
-          const count = record.get('count(*)').toInt();
-          return `${name} (${count})`;
-        }).join("\n\t");
-        ctx.reply(`Based your like and dislike we recommend the following beer(s):\n\t${beerList}`);
-      }
-    });
+    beerScores = graphDAO.recommendBeers(ctx.from.id)
+    if (beerScores.length === 0) ctx.reply("You haven't liked enough beers to have recommendations");
+    else {
+      const beerList = beerScores.map((record) => {
+        const name = record.beer.name;
+        const rank = record.rank;
+        return `${name} (${rank})`;
+      }).join("\n\t");
+      ctx.reply(`Based your like and dislike we recommend the following beer(s):\n\t${beerList}`);
+    }
   }
 });
 
