@@ -141,8 +141,8 @@ When asked, the bot will provide a recommendation based on the beers you rated.
 Use inline queries to display a beer, then use the inline keyboard of the resulting message to react.
 Use the command /recommendBeer to get a personalized recommendation.
 
-/listBreweries to list breweries. You can then click one to see its list of beers
-/listTypes to list beer types. You can then click one to see its list of beers
+/list_breweries to list breweries. You can then click one to see its list of beers
+/list_types to list beer types. You can then click one to see its list of beers
 /list_myTopBreweries to list my favourite breweries with their associated ratings
 /list_globalTopBreweries to list the overall best rated breweries
 /list_myTopTypes to list my favourite beer types with their associated ratings
