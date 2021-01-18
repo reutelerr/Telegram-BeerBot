@@ -283,8 +283,10 @@ class GraphDAO {
       return this.run(`
         match (u:User{id:$userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
         where l.rank >= 4 and l2.rank >= 4 and l3.rank >= 4
-        return b2, (l.rank + l2.rank + l3.rank) AS rank
-        ORDER BY rank DESC
+        WITH b2, (l.rank + l2.rank + l3.rank) AS rank
+        WITH b2, MAX(rank)*100/15 as maxPercentage
+        RETURN b2, maxPercentage
+        ORDER BY maxPercentage DESC
         limit 5
       `, {
         userId
@@ -292,7 +294,7 @@ class GraphDAO {
         result.records.forEach( record => {
           if(!alreadyLiked.includes(record.get('b2'))) {
             let beer = record.get('b2');
-            let rank = record.get('rank');
+            let rank = record.get('maxPercentage');
             if(scoreTable.includes((element) => element.beer === beer)) {
               scoreTable.find((element) => element.beer === beer).rank += rank;
             } else {

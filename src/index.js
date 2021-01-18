@@ -157,8 +157,8 @@ bot.command('recommendBeer', (ctx) => {
       else {
         const beerList = beerScores.map((record) => {
           const name = record.beer.properties.name;
-          const rank = record.rank;
-          return `${name} (${rank})`;
+          const rank = record.rank.toFixed(2);
+          return `${name} (${rank}%)`;
         }).join("\n\t");
         ctx.reply(`Based your like and dislike we recommend the following beer(s):\n\t${beerList}`);
       }
