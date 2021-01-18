@@ -160,7 +160,7 @@ bot.command('recommendBeer', (ctx) => {
           const rank = record.rank.toFixed(2);
           return `${name} (${rank}%)`;
         }).join("\n\t");
-        ctx.reply(`Based your like and dislike we recommend the following beer(s):\n\t${beerList}`);
+        ctx.reply(`Based on  your votes we recommend the following beer(s):\n\t${beerList}`);
       }
     });
   }
