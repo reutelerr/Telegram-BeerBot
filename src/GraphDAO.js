@@ -342,9 +342,10 @@ class GraphDAO {
 
   listBreweryBeers(breweryId) {
     return this.run(`
-      match (t:Type)
-      return t
+        MATCH (b:Beer)-[BREWED_BY]->(br:Brewery{id: $breweryId})
+        RETURN b
     `, {
+      breweryId
     }).then((result) => result.records);
   }
 }
