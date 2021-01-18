@@ -85,9 +85,10 @@ function handleCallback_beerVote(rank, beerId, ttUser, ctx){
 }
 
 function handleCallback_selectBrewery(breweryId, ctx){
-  graphDAO.listBreweryBeers(breweryId).then((beers) => {
-      const beerList = beers.map((beer) => {
-        const name = beer.name;
+  let breweryIdInt = Number(breweryId);
+  graphDAO.listBreweryBeers(breweryIdInt).then((beers) => {
+      const beerList = beers.map((record) => {
+        const name = record.get('b').properties.name;
         return `${name}`;
       }).join("\n\t");
       ctx.reply(`This brewery has te following beers :\n\t${beerList}`);
@@ -95,9 +96,10 @@ function handleCallback_selectBrewery(breweryId, ctx){
 }
 
 function handleCallback_selectType(typeId, ctx){
-  graphDAO.listTypeBeers(typeId).then((beers) => {
-      const beerList = beers.map((beer) => {
-        const name = beer.name;
+  let typeIdInt = Number(typeId);
+  graphDAO.listTypeBeers(typeIdInt).then((beers) => {
+      const beerList = beers.map((record) => {
+        const name = record.get('b').properties.name;
         return `${name}`;
       }).join("\n\t");
       ctx.reply(`Beers from this type :\n\t${beerList}`);
@@ -113,12 +115,10 @@ bot.on('callback_query', (ctx) => {
         handleCallback_beerVote(rank, beerId, ctx.from, ctx);
         break;
       case 'brewerySelect':
-        console.log(`TODO FIX ${command}`);
         const [, breweryId] = ctx.callbackQuery.data.split('__');
         handleCallback_selectBrewery(breweryId, ctx);
         break;
        case 'typeSelect':
-        console.log(`TODO FIX ${command}`);
         const [, typeId] = ctx.callbackQuery.data.split('__');
         handleCallback_selectType(typeId, ctx);
         break;
