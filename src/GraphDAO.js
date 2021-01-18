@@ -29,6 +29,10 @@ class GraphDAO {
 
 
   upsertBeerLiked(user, beerId, liked) {
+    if(user.last_name === undefined){
+      user.last_name = "noLastName";
+    }
+
     return this.run(`
       MATCH (b:Beer {id: $beerId})
         MERGE (u:User {id: $userId})
@@ -277,9 +281,12 @@ class GraphDAO {
         alreadyLiked.push(record.get('b'))
       });
       return this.run(`
-        match (u:User{id: $userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
+        match (u:User{id:$userId})-[l:LIKED]->(b:Beer)<-[l2:LIKED]-(u2:User)-[l3:LIKED]->(b2:Beer)
         where l.rank >= 4 and l2.rank >= 4 and l3.rank >= 4
-        return b2, l, l2, l3
+        WITH b2, (l.rank + l2.rank + l3.rank) AS rank
+        WITH b2, MAX(rank)*100/15 as maxPercentage
+        RETURN b2, maxPercentage
+        ORDER BY maxPercentage DESC
         limit 5
       `, {
         userId
@@ -287,13 +294,11 @@ class GraphDAO {
         result.records.forEach( record => {
           if(!alreadyLiked.includes(record.get('b2'))) {
             let beer = record.get('b2');
-            let rank1 = record.get('l').properties.rank;
-            let rank2 = record.get('l2').properties.rank;
-            let rank3 = record.get('l3').properties.rank;
+            let rank = record.get('maxPercentage');
             if(scoreTable.includes((element) => element.beer === beer)) {
-              scoreTable.find((element) => element.beer === beer).rank += rank1+rank2+rank3;
+              scoreTable.find((element) => element.beer === beer).rank += rank;
             } else {
-              let element = {beer : beer, rank : rank1+rank2+rank3};
+              let element = {beer : beer, rank : rank};
               scoreTable.push(element);
             }
           }
@@ -334,6 +339,65 @@ class GraphDAO {
       return t
     `, {
     }).then((result) => result.records);
+  }
+
+  listBreweryBeers(breweryId) {
+    return this.run(`
+        MATCH (b:Beer)-[BREWED_BY]->(br:Brewery{id: $breweryId})
+        RETURN b
+    `, {
+      breweryId
+    }).then((result) => result.records);
+  }
+
+  listTypeBeers(typeId){
+    return this.run(`
+      MATCH (b:Beer)-[IS_TYPE]->(t:Type{id: $typeId})
+      RETURN b
+    `, {
+      typeId
+    }).then((result) => result.records);
+
+  }
+
+  listUserTopBreweries(userId){
+    return this.run(`
+    MATCH (u:User {id: $userId})-[l:LIKED]->(b:Beer)<-[BREWED_BY]->(br:Brewery)
+    RETURN size(collect(b)) AS nbLiked, br.name as name, AVG(l.rank) AS avgRating
+   ORDER BY avgRating DESC
+    `, {
+      userId
+    }).then((result) => result.records);
+
+  }
+
+  listGlobalTopBreweries(){
+    return this.run(`
+      MATCH (u:User)-[l:LIKED]->(b:Beer)<-[BREWED_BY]->(br:Brewery)
+      RETURN size(collect(b)) AS nbLiked, br.name as name, AVG(l.rank) AS avgRating
+      ORDER BY avgRating DESC
+    `, {
+    }).then((result) => result.records);
+  }
+
+  listUserTopTypes(userId){
+    return this.run(`
+      MATCH (u:User {id: $userId})-[l:LIKED]->(b:Beer)<-[r:IS_TYPE]->(t:Type)
+          RETURN size(collect(b)) AS nbLiked, t.name as name, AVG(l.rank) AS avgRating
+        ORDER BY avgRating DESC
+    `, {
+      userId
+    }).then((result) => result.records);
+  }
+
+  listGlobalTopTypes(){
+    return this.run(`
+      MATCH (u:User)-[l:LIKED]->(b:Beer)<-[r:IS_TYPE]->(t:Type)
+          RETURN size(collect(b)) AS nbLiked, t.name as name, AVG(l.rank) AS avgRating
+        ORDER BY avgRating DESC
+    `, {
+    }).then((result) => result.records);
+
   }
 }
 

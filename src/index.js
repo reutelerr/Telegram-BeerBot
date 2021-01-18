@@ -84,12 +84,43 @@ function handleCallback_beerVote(rank, beerId, ttUser, ctx){
   });
 }
 
+function handleCallback_selectBrewery(breweryId, ctx){
+  let breweryIdInt = Number(breweryId);
+  graphDAO.listBreweryBeers(breweryIdInt).then((beers) => {
+      const beerList = beers.map((record) => {
+        const name = record.get('b').properties.name;
+        return `${name}`;
+      }).join("\n\t");
+      ctx.reply(`This brewery has te following beers :\n\t${beerList}`);
+  });
+}
+
+function handleCallback_selectType(typeId, ctx){
+  let typeIdInt = Number(typeId);
+  graphDAO.listTypeBeers(typeIdInt).then((beers) => {
+      const beerList = beers.map((record) => {
+        const name = record.get('b').properties.name;
+        return `${name}`;
+      }).join("\n\t");
+      ctx.reply(`Beers from this type :\n\t${beerList}`);
+  });
+}
+
 bot.on('callback_query', (ctx) => {
   if (ctx.callbackQuery && ctx.from) {
-    const [command, rank, beerId] = ctx.callbackQuery.data.split('__');
+    const command = ctx.callbackQuery.data.split('__')[0];
     switch(command){
       case 'beerVote':
+        const [, rank, beerId] = ctx.callbackQuery.data.split('__');
         handleCallback_beerVote(rank, beerId, ctx.from, ctx);
+        break;
+      case 'brewerySelect':
+        const [, breweryId] = ctx.callbackQuery.data.split('__');
+        handleCallback_selectBrewery(breweryId, ctx);
+        break;
+       case 'typeSelect':
+        const [, typeId] = ctx.callbackQuery.data.split('__');
+        handleCallback_selectType(typeId, ctx);
         break;
       default:
         console.log(`error for command ${command}`);
@@ -126,8 +157,8 @@ bot.command('recommendBeer', (ctx) => {
       else {
         const beerList = beerScores.map((record) => {
           const name = record.beer.properties.name;
-          const rank = record.rank;
-          return `${name} (${rank})`;
+          const rank = record.rank.toFixed(2);
+          return `${name} (${rank}%)`;
         }).join("\n\t");
         ctx.reply(`Based your like and dislike we recommend the following beer(s):\n\t${beerList}`);
       }
@@ -163,7 +194,7 @@ function keyboardFromBreweries(listBreweries) {
     const brewery = record.get('br').properties;
     return {
       "text": brewery.name,
-      "callback_data": brewery.id
+      "callback_data": 'brewerySelect' + '__' + brewery.id
     };
   });
 
@@ -195,7 +226,7 @@ function keyboardFromTypes(listTypes) {
     const type = record.get('t').properties;
     return {
       "text": type.name,
-      "callback_data": type.id
+      "callback_data": 'typeSelect' + '__' + type.id
     };
   });
 
@@ -206,4 +237,55 @@ function keyboardFromTypes(listTypes) {
       ]
     }
   };
+}
+
+bot.command('list_myTopBreweries', (ctx) => {
+  if (!ctx.from || !ctx.from.id) {
+    ctx.reply('We cannot guess who you are');
+  } else {
+    graphDAO.listUserTopBreweries(ctx.from.id).then((records) => {
+      if (records.length === 0) ctx.reply("You haven't liked enough beers to have stats");
+      else {
+        const beerList = getRatings(records);
+        ctx.reply(`Your top breweries :\n\t${beerList}`);
+      }
+    });
+  }
+});
+
+bot.command('list_globalTopBreweries', (ctx) => {
+  graphDAO.listGlobalTopBreweries().then((records) => {
+    const beerList = getRatings(records);
+    ctx.reply(`Top breweries :\n\t${beerList}`);
+  });
+});
+
+bot.command('list_myTopTypes', (ctx) => {
+  if (!ctx.from || !ctx.from.id) {
+    ctx.reply('We cannot guess who you are');
+  } else {
+    graphDAO.listUserTopTypes(ctx.from.id).then((records) => {
+      if (records.length === 0) ctx.reply("You haven't liked enough beers to have stats");
+      else {
+        const beerList = getRatings(records);
+        ctx.reply(`Your top types :\n\t${beerList}`);
+      }
+    });
+  }
+});
+
+bot.command('list_globalTopTypes', (ctx) => {
+  graphDAO.listGlobalTopTypes().then((records) => {
+    const beerList = getRatings(records);
+    ctx.reply(`Top types :\n\t${beerList}`);
+  });
+});
+
+function getRatings(records){
+  return records.map((record) => {
+    const name = record.get('name');
+    const nbVotes = record.get('nbLiked');
+    const avgRating = record.get('avgRating').toFixed(1);
+    return `${name} | avg rating: ${avgRating} (based on ${nbVotes} votes)`;
+  }).join("\n\t");
 }
