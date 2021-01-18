@@ -91,7 +91,7 @@ function handleCallback_selectBrewery(breweryId, ctx){
         const name = record.get('b').properties.name;
         return `${name}`;
       }).join("\n\t");
-      ctx.reply(`This brewery has te following beers :\n\t${beerList}`);
+      ctx.reply(`This brewery has the following beers :\n\t${beerList}`);
   });
 }
 
