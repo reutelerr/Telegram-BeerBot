@@ -240,7 +240,6 @@ function keyboardFromTypes(listTypes) {
 }
 
 bot.command('list_myTopBreweries', (ctx) => {
-  let beerScores;
   if (!ctx.from || !ctx.from.id) {
     ctx.reply('We cannot guess who you are');
   } else {
@@ -256,4 +255,16 @@ bot.command('list_myTopBreweries', (ctx) => {
       }
     });
   }
+});
+
+bot.command('list_globalTopBreweries', (ctx) => {
+  graphDAO.listGlobalTopBreweries().then((records) => {
+    const beerList = records.map((record) => {
+      const name = record.get('br.name');
+      const nbVotes = record.get('nbLiked');
+      const avgRating = record.get('avgRating').toFixed(1);
+      return `${name} | avg rating: ${avgRating} (based on ${nbVotes} votes)`;
+    }).join("\n\t");
+    ctx.reply(`Top breweries :\n\t${beerList}`);
+  });
 });
